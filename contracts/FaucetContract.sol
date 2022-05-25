@@ -2,8 +2,9 @@
 pragma solidity >=0.4.22 <0.9.0;
 
 import "./OwnedContract.sol";
+import "./LoggerContract.sol";
 
-contract Faucet is Owned {
+contract Faucet is Owned, Logger {
     uint256 public numOfFunders;
     mapping(address => bool) private funders;
     mapping(uint256 => address) private lookupFunders;
@@ -59,6 +60,11 @@ contract Faucet is Owned {
 
     function transferOwnershipTo(address newOwner) external checkOwner {
         _owner = newOwner;
+    }
+
+    //LoggerContract functions
+    function emitLog() public pure override returns (bytes32) {
+        return "Hello world!";
     }
 
     //sudo truffle migrate --reset
