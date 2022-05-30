@@ -21,7 +21,6 @@ function App() {
       const provider = await detectEthereumProvider();
       const loaded_contract = await loadContract("Faucet", provider);
 
-      debugger
       if (provider) {
         provider.request({ method: "eth_requestAccounts" });
         setWeb3Api({
