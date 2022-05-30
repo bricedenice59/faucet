@@ -3,7 +3,7 @@ import React from "react";
 import Web3 from "web3";
 import "./App.css";
 import detectEthereumProvider from '@metamask/detect-provider';
-var contract_utils = require('./Utils/contract-utils');
+import { loadContract } from "./Utils/contract-utils";
 
 function App() {
 
@@ -18,16 +18,16 @@ function App() {
   useEffect(() => {
     const loadProvider = async () => {
       //metamask
-
       const provider = await detectEthereumProvider();
-      const loaded_contract = await contract_utils.loadContract("Faucet");
+      const loaded_contract = await loadContract("Faucet", provider);
 
+      debugger
       if (provider) {
         provider.request({ method: "eth_requestAccounts" });
         setWeb3Api({
           web3: new Web3(provider),
           provider,
-          loaded_contract
+          contract: loaded_contract
         });
       } else {
         console.log('Please install MetaMask!');
