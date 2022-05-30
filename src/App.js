@@ -2,56 +2,62 @@ import { useEffect, useState } from "react";
 import React from "react";
 import Web3 from "web3";
 import "./App.css";
+import detectEthereumProvider from '@metamask/detect-provider';
 
 function App() {
-  const initialCount = 5;
 
   const [web3Api, setWeb3Api] = useState({
     provider: null,
     web3: null
   });
 
+  const [account, setAccount] = useState(null);
+
   useEffect(() => {
     const loadProvider = async () => {
       //metamask
-      let provider = null;
 
-      //latest version
-      if (window.ethereum) {
-        provider = window.ethereum;
+      const provider = await detectEthereumProvider();
 
-        try {
-          provider.enable();
-        } catch {
-          console.error("user denied accounts access!");
-        }
+      if (provider) {
+        provider.request({ method: "eth_requestAccounts" });
+        setWeb3Api({
+          web3: new Web3(provider),
+          provider
+        });
+      } else {
+        console.log('Please install MetaMask!');
       }
-      //legacy versions
-      else if (window.web3) {
-        provider = window.web3.currentProvider;
-      }
-      else if (!process.env.production) {
-        provider = new Web3.providers.HttpProvider("http://127.0.0.1:7545");
-      }
-
-      setWeb3Api(provider, new Web3(provider));
     }
     loadProvider()
   }, []);
 
+  useEffect(() => {
+    const getAccount = async () => {
+      const accounts = await web3Api.web3.eth.getAccounts();
+      setAccount(accounts[0]);
+    }
+    web3Api.web3 && getAccount();
+  }, [web3Api.web3]);
+
   return (
     <div className="faucet-wrapper">
       <div className="faucet">
-        <div className="balance-view is-size-2">
+        <span>
+          <strong>Account:</strong>
+        </span>
+        {account ?
+          <div>{account}</div> :
+          <button className="button is-primary is-light mr-2" onClick={() => {
+            web3Api.provider.request({ method: "eth_requestAccounts" });
+          }
+          }>Connect</button>
+        }
+        <div className="balance-view is-size-2 mb-4">
           Current Balance: <strong>10</strong> ETH
         </div>
-        <button className="btn mr-2" onClick={async () => {
-          const accounts = await window.ethereum.request({ method: "eth_requestAccounts" })
-          console.log(accounts)
-        }
-        }>Enable Ethereum</button>
-        <button className="btn mr-2">Donate</button>
-        <button className="btn">Withdraw</button>
+        <button className="button mr-2">Donate</button>
+        <button className="button">Withdraw</button>
       </div>
     </div>
   );
